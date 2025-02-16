@@ -88,7 +88,7 @@ def pov():
         globals_scope = results.get("globals", [])
         locals_scope = results.get("locals", [])
 
-        # Sort by 'name' (optional)
+        # Sort by 'name' (optional) -- think this messes up the order of variables / children references
         # globals_scope.sort(key=lambda x: x.get("name", "").lower())
         # locals_scope.sort(key=lambda x: x.get("name", "").lower())
         # print(f"Globals: {globals_scope}")

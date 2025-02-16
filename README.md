@@ -3,7 +3,7 @@ Debugging tool thats lets you easily inspect/visualize objects and variables in 
 
 
 ## Setup
-On the project you wish to debug, install `debugpy`:  
+On the project you wish to debug, install [debugpy](https://github.com/microsoft/debugpy):  
 `pipenv install debugpy`
 
 
