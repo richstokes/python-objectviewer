@@ -8,6 +8,7 @@ VARIABLE_NAMES_TO_FILTER = [
     "__name__",
     "__package__",
     "__spec__",
+    "special variables",
 ]
 VARIABLE_TYPES_TO_FILTER = [
     "builtin_function_or_method",
@@ -155,9 +156,8 @@ def pov():
 
         # Tree method
         render_tree(globals_scope, "Globals")
-        # with hd.hbox:
-        hd.divider(spacing=2)
-        render_tree(locals_scope, "Locals")
+        # hd.divider(spacing=2)
+        # render_tree(locals_scope, "Locals")
 
 
 hd.run(
