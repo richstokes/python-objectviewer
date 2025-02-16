@@ -37,8 +37,7 @@ def render_variable_table(variables, indent=0):
                 continue
             print(f"Rendering variable: {name}")
             with hd.tr():
-                # Use padding or spacing to show "indentation" visually
-                # (You could also do a nested table approach.)
+                # TODO: Use padding or spacing to show "indentation" visually
                 with hd.td():
                     hd.markdown(f"**{name}**")
                 hd.td(f"`{value}`")
