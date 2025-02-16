@@ -14,12 +14,6 @@ From the project you with to debug:
 pipenv run python -m debugpy --listen localhost:5678 your-script.py
 ```
 
-
-```
-pipenv run python -m debugpy --listen localhost:5678 hdgol.py
-```
-
-
 ## Run python-objectviewer
 Clone this repo and run:
 `HD_PORT=9000 pipenv run python pov.py`
