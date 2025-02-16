@@ -4,13 +4,14 @@ from dap_client import *
 
 def pov():
     hd.markdown("## Python Object Viewer")
-    # hd.divider(spacing=1)
+    hd.divider(spacing=1, thickness=0)
 
     dap_task = hd.task()
     dap_task.run(dap_client)
 
     if dap_task.running:
         hd.markdown("## Waiting for variables...")
+        hd.spinner()
 
     if dap_task.error:
         print("Error collecting variables.")
@@ -18,7 +19,7 @@ def pov():
         return
 
     if dap_task.done:
-        hd.markdown("### Variables")
+        hd.markdown("## Variables")
         hd.divider(spacing=1)
         # print(f"DEBUG dap_task.result: \n\n{dap_task.result}")
 
@@ -67,7 +68,7 @@ def pov():
                             hd.td(var_evaulation_name)
                             hd.td(var_ref)
 
-        hd.divider(spacing=2)
+        hd.divider(spacing=2, thickness=0)
         hd.markdown("### Locals")
         with hd.table():
             # Table header
