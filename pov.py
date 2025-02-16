@@ -103,4 +103,9 @@ def pov():
                             hd.td(var_ref)
 
 
-hd.run(pov)
+hd.run(
+    pov,
+    index_page=hd.index_page(
+        title="Python Object Viewer",
+    ),
+)
