@@ -15,6 +15,24 @@ VARIABLE_TYPES_TO_FILTER = [
 ]  # Dont display these
 
 
+def render_table(variables, title):
+    hd.markdown(f"### {title}")
+    with hd.table():
+        # Table header
+        with hd.thead():
+            with hd.tr():
+                hd.td("Name")
+                hd.td("Ident")  # Testing
+                hd.td("Value")
+                hd.td("Type")
+                hd.td("Evaluation Name")
+                hd.td("Ref")
+        # Table body
+        with hd.tbody():
+            render_variable_table(variables, indent=0)
+    hd.divider(spacing=2)
+
+
 def render_variable_table(variables, indent=0):
     """
     Renders a list of variables (each may have 'children') in a nested table format.
@@ -72,7 +90,8 @@ def pov():
 
     if dap_task.running:
         hd.markdown("## Waiting for variables...")
-        hd.spinner()
+        with hd.box(font_size=4):
+            hd.spinner(speed="5s", track_width=0.5)
 
     if dap_task.error:
         print("Error collecting variables.")
@@ -93,36 +112,8 @@ def pov():
         # locals_scope.sort(key=lambda x: x.get("name", "").lower())
         # print(f"Globals: {globals_scope}")
 
-        hd.markdown("### Globals")
-        with hd.table():
-            # Table header
-            with hd.thead():
-                with hd.tr():
-                    hd.td("Name")
-                    hd.td("Ident")  # Testing
-                    hd.td("Value")
-                    hd.td("Type")
-                    hd.td("Evaluation Name")
-                    hd.td("Ref")
-            # Table body
-            with hd.tbody():
-                render_variable_table(globals_scope, indent=0)
-
-        hd.divider(spacing=2)
-
-        hd.markdown("### Locals")
-        with hd.table():
-            # Table header
-            with hd.thead():
-                with hd.tr():
-                    hd.td("Name")
-                    hd.td("Value")
-                    hd.td("Type")
-                    hd.td("Evaluation Name")
-                    hd.td("Ref")
-            # Table body
-            with hd.tbody():
-                render_variable_table(locals_scope, indent=0)
+        render_table(globals_scope, "Globals")
+        render_table(locals_scope, "Locals")
 
 
 hd.run(
