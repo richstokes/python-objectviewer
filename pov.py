@@ -29,21 +29,29 @@ def render_variable_table(variables, indent=0):
         with hd.scope(v):
             # Filter out certain variable names
             if name in VARIABLE_NAMES_TO_FILTER:
-                # quit()
-                print(f"Skipping variable: {name}")
                 continue
             # Filter out certain variable types
             if var_type in VARIABLE_TYPES_TO_FILTER:
                 continue
-            print(f"Rendering variable: {name}")
+            print(f"Rendering variable: {name} with value: {value}")
             with hd.tr():
                 # TODO: Use padding or spacing to show "indentation" visually
                 with hd.td():
                     hd.markdown(f"**{name}**")
-                hd.td(f"`{value}`")
-                hd.td(var_type)
-                hd.td(evaluate_name)
-                hd.td(v.get("variablesReference", 0))
+                with hd.td():
+                    if value:
+                        hd.markdown(f"`{value}`")
+                    else:
+                        hd.markdown("`None`")
+                with hd.td():
+                    if var_type:
+                        hd.markdown(f"`{var_type}`")
+                    else:
+                        hd.markdown("`None`")
+                with hd.td():
+                    hd.markdown(f"`{evaluate_name}`")
+                with hd.td():
+                    hd.markdown(f"`{v.get('variablesReference', 0)}`")
 
             # If this variable has child variables, recurse
             if children:
