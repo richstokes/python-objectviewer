@@ -9,7 +9,7 @@ VARIABLE_NAMES_TO_FILTER = [
     "__package__",
     "__spec__",
     "special variables",
-]
+]  # Dont display these
 VARIABLE_TYPES_TO_FILTER = [
     "builtin_function_or_method",
     "method-wrapper",
@@ -99,21 +99,25 @@ def render_variable_tree(variables):
         evaluate_name = v.get("evaluateName", "")
         children = v.get("children", [])
 
+        # Filter out certain variable names
+        if name in VARIABLE_NAMES_TO_FILTER:
+            continue
+        # Filter out certain variable types
+        if var_type in VARIABLE_TYPES_TO_FILTER:
+            continue
+
         # Render one node for the variable
         with hd.scope(v):
-            # Filter out certain variable names
-            if name in VARIABLE_NAMES_TO_FILTER:
-                continue
-            # Filter out certain variable types
-            if var_type in VARIABLE_TYPES_TO_FILTER:
-                continue
             print(f"Rendering variable: {name} with value: {value}")
             with hd.tree_item():
-                hd.markdown(f"**{name}**")
-                hd.markdown(f"`{value}`")
-                hd.markdown(f"`{var_type}`")
-                hd.markdown(f"`{evaluate_name}`")
-                hd.markdown(f"`{v.get('variablesReference', 0)}`")
+                # hd.markdown(f"**{name}**")
+                # hd.markdown(f"{name}")
+                # hd.markdown(f"`{value}`")
+                # hd.markdown(f"`{var_type}`")
+                # hd.markdown(f"`{evaluate_name}`")
+                # hd.markdown(f"`{v.get('variablesReference', 0)}`")
+
+                hd.markdown(f"**{name}**: `{value}` (**Type**: {var_type})")
 
                 # If this variable has child variables, recurse
                 if children:
@@ -155,9 +159,22 @@ def pov():
         # render_table(locals_scope, "Locals")
 
         # Tree method
-        render_tree(globals_scope, "Globals")
+        # render_tree(globals_scope, "Globals")
         # hd.divider(spacing=2)
-        # render_tree(locals_scope, "Locals")
+        render_tree(locals_scope, "Locals")
+
+        # with hd.tree(indent_guide_width="1px"):
+        #     hd.tree_item("One")
+        #     hd.tree_item("Two")
+        #     with hd.tree_item("Three"):
+        #         hd.tree_item("Three A")
+        #         hd.tree_item("Three B")
+        #         with hd.tree_item("Three C"):
+        #             hd.tree_item("Three C-1")
+        #             hd.tree_item("Three C-2")
+        #         hd.tree_item("Three D")
+        #     hd.tree_item("Four")
+        #     hd.tree_item("Five")
 
 
 hd.run(
