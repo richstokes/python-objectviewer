@@ -81,6 +81,44 @@ def render_variable_table(variables, indent=0):
                 render_variable_table(children, indent=indent + 1)
 
 
+def render_tree(variables, title):
+    hd.markdown(f"### {title}")
+    with hd.tree(indent_guide_width="1px"):
+        render_variable_tree(variables)
+
+
+def render_variable_tree(variables):
+    """
+    Renders a list of variables (each may have 'children') in a nested tree format.
+    """
+    for v in variables:
+        name = v["name"]
+        value = v.get("value", "unknown")
+        var_type = v.get("type", "unknown")
+        evaluate_name = v.get("evaluateName", "")
+        children = v.get("children", [])
+
+        # Render one node for the variable
+        with hd.scope(v):
+            # Filter out certain variable names
+            if name in VARIABLE_NAMES_TO_FILTER:
+                continue
+            # Filter out certain variable types
+            if var_type in VARIABLE_TYPES_TO_FILTER:
+                continue
+            print(f"Rendering variable: {name} with value: {value}")
+            with hd.tree_item():
+                hd.markdown(f"**{name}**")
+                hd.markdown(f"`{value}`")
+                hd.markdown(f"`{var_type}`")
+                hd.markdown(f"`{evaluate_name}`")
+                hd.markdown(f"`{v.get('variablesReference', 0)}`")
+
+                # If this variable has child variables, recurse
+                if children:
+                    render_variable_tree(children)
+
+
 def pov():
     hd.markdown("## Python Object Viewer")
     hd.divider(spacing=1, thickness=0)
@@ -110,10 +148,16 @@ def pov():
         # Sort by 'name' (optional) -- think this messes up the order of variables / children references
         # globals_scope.sort(key=lambda x: x.get("name", "").lower())
         # locals_scope.sort(key=lambda x: x.get("name", "").lower())
-        # print(f"Globals: {globals_scope}")
 
-        render_table(globals_scope, "Globals")
-        render_table(locals_scope, "Locals")
+        # Original table method
+        # render_table(globals_scope, "Globals")
+        # render_table(locals_scope, "Locals")
+
+        # Tree method
+        render_tree(globals_scope, "Globals")
+        # with hd.hbox:
+        hd.divider(spacing=2)
+        render_tree(locals_scope, "Locals")
 
 
 hd.run(
