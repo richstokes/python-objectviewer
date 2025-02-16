@@ -2,9 +2,11 @@
 
 import socket
 import json
+import sys
 
 HOST = "127.0.0.1"
 PORT = 5678
+DEPTH_LIMIT = 1  # 2  # How many levels deep to fetch variables
 
 
 def read_line(sock):
@@ -48,10 +50,9 @@ def read_dap_message(sock):
             k, v = line.split(":", 1)
             headers[k.strip().lower()] = v.strip()
 
-    # Must have Content-Length
     length_str = headers.get("content-length")
     if not length_str:
-        raise ConnectionError("No Content-Length header received; invalid DAP message.")
+        raise ConnectionError("No Content-Length header in DAP message.")
 
     length = int(length_str)
     raw_json = read_exactly(sock, length)
@@ -59,12 +60,9 @@ def read_dap_message(sock):
 
 
 def send_dap_request(sock, seq, command, arguments=None):
-    """
-    Sends a DAP request. Returns new seq (seq+1).
-    """
+    """Sends a DAP request. Returns the new seq (seq+1)."""
     if arguments is None:
         arguments = {}
-
     request = {
         "seq": seq,
         "type": "request",
@@ -77,10 +75,90 @@ def send_dap_request(sock, seq, command, arguments=None):
     return seq + 1
 
 
+def fetch_variables(sock, seq, var_ref):
+    """
+    Fetches the immediate children for the given variablesReference (single DAP "variables" request).
+    Returns (updated_seq, list_of_variable_dicts).
+    """
+    seq = send_dap_request(sock, seq, "variables", {"variablesReference": var_ref})
+
+    variables_response = None
+    while variables_response is None:
+        msg = read_dap_message(sock)
+        if msg.get("type") == "response" and msg.get("command") == "variables":
+            variables_response = msg
+        else:
+            # Just log and continue
+            print("Got message (waiting for variables):", msg)
+
+    vars_body = variables_response.get("body", {})
+    variables_list = vars_body.get("variables", [])
+    return seq, variables_list
+
+
+def fetch_variable_tree(sock, seq, var_ref, depth=DEPTH_LIMIT, visited=None):
+    """
+    Recursively fetches a tree of variables up to a certain depth.
+    - var_ref: The DAP variablesReference to expand.
+    - depth: How many levels deep to recurse.
+    - visited: A set of references we've already expanded, to avoid cycles.
+
+    Returns (updated_seq, list_of_trees).
+
+    Each item in list_of_trees is a dict:
+    {
+      "name": str,
+      "value": str,
+      "type": str,
+      "evaluateName": str or None,
+      "variablesReference": int,
+      "children": [ ... nested items ... ]
+    }
+    """
+    if visited is None:
+        visited = set()
+
+    # If we've already visited this reference, skip to avoid infinite loop
+    if var_ref in visited:
+        return seq, [
+            {"name": "<recursive>", "value": "...", "type": "recursive", "children": []}
+        ]
+
+    visited.add(var_ref)
+
+    # Always do a single-level "variables" fetch
+    seq, vars_list = fetch_variables(sock, seq, var_ref)
+
+    result = []
+    for v in vars_list:
+        child = {
+            "name": v["name"],
+            "value": v.get("value", ""),
+            "type": v.get("type", ""),
+            "evaluateName": v.get("evaluateName"),
+            "variablesReference": v.get("variablesReference", 0),
+            "children": [],
+        }
+
+        # If this variable has nested children, and we still have depth left
+        child_ref = child["variablesReference"]
+        if child_ref and child_ref > 0 and depth > 0:
+            # Recursively fetch child variables
+            seq, child_vars = fetch_variable_tree(
+                sock, seq, child_ref, depth=depth - 1, visited=visited
+            )
+            child["children"] = child_vars
+
+        result.append(child)
+
+    return seq, result
+
+
 def dap_client():
+    """Example DAP client that pauses the main thread and fetches local/global variables with children."""
     print(f"Connecting to {HOST}:{PORT}...")
     sock = socket.create_connection((HOST, PORT))
-    sock.settimeout(10.0)  # Adjust or remove timeout as needed
+    sock.settimeout(10.0)
 
     seq = 1
 
@@ -101,7 +179,6 @@ def dap_client():
     )
     print("Sent 'initialize' request.")
 
-    # Wait for initialize response
     initialize_response = None
     while not initialize_response:
         msg = read_dap_message(sock)
@@ -129,7 +206,7 @@ def dap_client():
         else:
             print("Got message (waiting for configurationDone):", msg)
 
-    # 4) request threads
+    # 4) threads
     seq = send_dap_request(sock, seq, "threads")
     print("Sent 'threads' request.")
 
@@ -141,51 +218,36 @@ def dap_client():
         else:
             print("Got message (waiting for threads):", msg)
 
-    threads = threads_response["body"]["threads"]
-    print(f"Threads: {threads}")
+    threads_body = threads_response["body"]
+    threads_list = threads_body.get("threads", [])
+    print(f"Threads: {threads_list}")
 
-    if not threads:
-        print("No threads to pause. Exiting.")
+    if not threads_list:
+        print("No threads. Exiting.")
         sock.close()
-        return
+        return {}
 
-    # 5) Pause the first thread
-    thread_id = threads[0]["id"]
+    # Pause the first thread so we can inspect variables
+    thread_id = threads_list[0]["id"]
     print(f"Pausing thread {thread_id}...")
 
     seq = send_dap_request(sock, seq, "pause", {"threadId": thread_id})
-
     paused = False
     while not paused:
         msg = read_dap_message(sock)
         if msg.get("type") == "response" and msg.get("command") == "pause":
             print("Got 'pause' response, success:", msg.get("success"))
-            # We expect a subsequent "stopped" event to confirm the thread is paused
         elif msg.get("type") == "event" and msg.get("event") == "stopped":
-            # The thread is now paused
             reason = msg["body"].get("reason")
-            print(f"Thread is stopped, reason: {reason}")
+            print(f"Thread is now paused (reason: {reason})")
             paused = True
         else:
-            print("Got message while waiting for pause:", msg)
+            print("Got message while waiting to pause:", msg)
 
-    # 6) Now we can get fresh threads again (the same ID is fine, but let's be sure)
-    seq = send_dap_request(sock, seq, "threads")
-    threads_again_response = None
-    while not threads_again_response:
-        msg = read_dap_message(sock)
-        if msg.get("type") == "response" and msg.get("command") == "threads":
-            threads_again_response = msg
-        else:
-            print("Got message (waiting for threads again):", msg)
-
-    # 7) Get stack trace of the paused thread
-    # (We assume the same thread ID, but you could re-lookup in case new threads started)
-    print(f"\nRequesting stack trace for thread {thread_id} (paused).")
+    # Now that thread is paused, ask for "stackTrace"
     seq = send_dap_request(
         sock, seq, "stackTrace", {"threadId": thread_id, "startFrame": 0, "levels": 20}
     )
-
     stack_trace_response = None
     while not stack_trace_response:
         msg = read_dap_message(sock)
@@ -195,16 +257,19 @@ def dap_client():
             print("Got message (waiting for stackTrace):", msg)
 
     frames = stack_trace_response["body"].get("stackFrames", [])
-    global_variables = []
-    local_variables = []
+    print(f"Found {len(frames)} frames.")
 
-    for frame in frames:
-        frame_id = frame["id"]
+    globals_result = []
+    locals_result = []
+
+    # Inspect the top frame's scopes, or all frames if you like
+    for f in frames:
+        frame_id = f["id"]
         print(
-            f"  Frame {frame_id}: {frame['name']} ({frame.get('source', {}).get('path', 'no_source')})"
+            f"Frame ID {frame_id}: {f['name']} @ {f.get('source',{}).get('path','no_source')}"
         )
 
-        # Get scopes in the paused frame
+        # 1) get scopes
         seq = send_dap_request(sock, seq, "scopes", {"frameId": frame_id})
         scopes_response = None
         while not scopes_response:
@@ -214,64 +279,32 @@ def dap_client():
             else:
                 print("Got message (waiting for scopes):", msg)
 
-        all_scopes = scopes_response["body"].get("scopes", [])
-        for scope in all_scopes:
-            scope_name = scope["name"]
-            var_ref = scope["variablesReference"]
-            print(f"    Scope: {scope_name} (variablesReference={var_ref})")
+        scope_list = scopes_response["body"].get("scopes", [])
+        for scope_info in scope_list:
+            scope_name = scope_info["name"]
+            scope_ref = scope_info["variablesReference"]
+            print(f"  Scope: {scope_name} (ref={scope_ref})")
 
-            # Get variables in this scope
-            seq = send_dap_request(
-                sock, seq, "variables", {"variablesReference": var_ref}
-            )
-            variables_response = None
-            while variables_response is None:
-                msg = read_dap_message(sock)
-                if msg.get("type") == "response" and msg.get("command") == "variables":
-                    variables_response = msg
-                else:
-                    print("Got message (waiting for variables):", msg)
+            # 2) Recursively expand the variables in this scope
+            seq, var_tree = fetch_variable_tree(sock, seq, scope_ref, depth=2)
 
-            vars_body = variables_response.get("body", {})
-            variables_list = vars_body.get("variables", [])
-            if not variables_list:
-                print("      No variables found in this scope or an error occurred.")
-                continue
+            if scope_name.lower() == "locals":
+                locals_result.extend(var_tree)
+            elif scope_name.lower() == "globals":
+                globals_result.extend(var_tree)
+            else:
+                print(f"    (Scope '{scope_name}' not recognized as locals/globals)")
 
-            for v in variables_list:
-                # print(f"DEBUG v: \n{v}\n*****\n")
-                name = v["name"]
-                value = v["value"]
-                var_type = v.get("type", "unknown")
-                # print(f"      {name} = {value} (type={var_type})")
-
-                if scope_name.lower() == "locals":
-                    local_variables.append(
-                        {
-                            "name": name,
-                            "value": value,
-                            "type": var_type,
-                            "evaluateName": v.get("evaluateName"),
-                            "variablesReference": v.get("variablesReference"),
-                        }
-                    )
-                elif scope_name.lower() == "globals":
-                    global_variables.append(
-                        {
-                            "name": name,
-                            "value": value,
-                            "type": var_type,
-                            "evaluateName": v.get("evaluateName"),
-                            "variablesReference": v.get("variablesReference"),
-                        }
-                    )
-                else:
-                    print(f"      Unknown scope: {scope_name}")
-
-    print("\nDone collecting variables. Closing socket.")
+    print("Done collecting variables. Closing socket.")
     sock.close()
-    return {"globals": global_variables, "locals": local_variables}
+
+    return {
+        "globals": globals_result,
+        "locals": locals_result,
+    }
 
 
 if __name__ == "__main__":
-    dap_client()
+    result = dap_client()
+    print("\n=== Final Expanded Variables ===\n")
+    print(json.dumps(result, indent=2))
