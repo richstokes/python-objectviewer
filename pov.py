@@ -9,7 +9,10 @@ VARIABLE_NAMES_TO_FILTER = [
     "__package__",
     "__spec__",
 ]
-VARIABLE_TYPES_TO_FILTER = ["builtin_function_or_method"]  # Dont display these
+VARIABLE_TYPES_TO_FILTER = [
+    "builtin_function_or_method",
+    "method-wrapper",
+]  # Dont display these
 
 
 def render_variable_table(variables, indent=0):
@@ -35,9 +38,11 @@ def render_variable_table(variables, indent=0):
                 continue
             print(f"Rendering variable: {name} with value: {value}")
             with hd.tr():
+                # TODO: Display values differently based on type
                 # TODO: Use padding or spacing to show "indentation" visually
                 with hd.td():
                     hd.markdown(f"**{name}**")
+                hd.td(f"{indent}")
                 with hd.td():
                     if value:
                         hd.markdown(f"`{value}`")
@@ -84,8 +89,8 @@ def pov():
         locals_scope = results.get("locals", [])
 
         # Sort by 'name' (optional)
-        globals_scope.sort(key=lambda x: x["name"])
-        locals_scope.sort(key=lambda x: x["name"])
+        # globals_scope.sort(key=lambda x: x.get("name", "").lower())
+        # locals_scope.sort(key=lambda x: x.get("name", "").lower())
         # print(f"Globals: {globals_scope}")
 
         hd.markdown("### Globals")
@@ -94,6 +99,7 @@ def pov():
             with hd.thead():
                 with hd.tr():
                     hd.td("Name")
+                    hd.td("Ident")  # Testing
                     hd.td("Value")
                     hd.td("Type")
                     hd.td("Evaluation Name")
