@@ -4,6 +4,8 @@ It uses the Debug Adapter Protocol (DAP) to retrieve the objects in your running
 
 Everytime you refresh the page, it briefly pauses your running code and displays a snapshot of its current state.  
 
+![Screenshot](screenshot.png){ width=500 }
+
 
 ## Setup
 On the project you wish to debug, install [debugpy](https://github.com/microsoft/debugpy):  
