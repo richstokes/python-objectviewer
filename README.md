@@ -6,7 +6,7 @@ Everytime you refresh the page, it briefly pauses your running code and displays
 
 
 #### Screenshot
-![Screenshot](screenshot.png){ width=500 }
+![Screenshot](screenshot.png)
 
 
 ## Setup
