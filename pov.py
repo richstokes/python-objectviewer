@@ -115,7 +115,7 @@ def render_variable_tree(variables):
 
         # Render one node for the variable
         with hd.scope(v):
-            print(f"Rendering variable: {name} with value: {value}")
+            # print(f"DEBUG: Rendering variable: {name} with value: {value}")
             with hd.tree_item():
                 # hd.markdown(f"**{name}**")
                 # hd.markdown(f"{name}")
