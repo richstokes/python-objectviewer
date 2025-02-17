@@ -2,7 +2,7 @@ Debugging tool thats lets you easily inspect/visualize objects and variables in 
 
 It uses the Debug Adapter Protocol (DAP) to retrieve the objects in your running python program. It then displays them in a web app.  
 
-Everytime you refresh the page, it briefly pauses your running code and displays a snapshot of its current state.  
+Every time you refresh the page, it briefly pauses your running code and displays a snapshot of its current state.  
 
 
 #### Screenshot
