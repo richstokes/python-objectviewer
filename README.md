@@ -10,18 +10,18 @@ Every time you refresh the page, it briefly pauses your running code and display
 
 
 ## Setup
-On the project you wish to debug, install [debugpy](https://github.com/microsoft/debugpy):  
+On the project you wish to debug, install [debgugpy](https://github.com/microsoft/debugpy):  
 `pipenv install debugpy`
 
 
 
-## Start debugpy server
+### Start debugpy server
 From the project you with to debug:
 ```
 pipenv run python -m debugpy --listen localhost:5678 your-script.py
 ```
 
-## Run python-objectviewer
+### Run python-objectviewer
 In another terminal, clone this repo and run:
 `HD_PORT=9000 pipenv run python pov.py`
 
