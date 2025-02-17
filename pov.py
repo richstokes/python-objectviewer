@@ -89,9 +89,10 @@ def render_variable_table(variables, indent=0):
 
 
 def render_tree(variables, title):
-    hd.markdown(f"### {title}")
-    with hd.tree(indent_guide_width="1px"):
-        render_variable_tree(variables)
+    with hd.box(border="0px solid blue", padding=0.8):
+        hd.markdown(f"### {title}")
+        with hd.tree(indent_guide_width="1px"):
+            render_variable_tree(variables)
 
 
 def render_variable_tree(variables):
@@ -123,8 +124,9 @@ def render_variable_tree(variables):
                 # hd.markdown(f"`{evaluate_name}`")
                 # hd.markdown(f"`{v.get('variablesReference', 0)}`")
 
-                hd.markdown(f"**{name}**: `{value}` (**Type**: {var_type}) ")
+                hd.markdown(f"**{name}**: `{value}` (**Type**: `{var_type}`) ")
                 if name != evaluate_name and evaluate_name:
+                    hd.markdown(" &nbsp;&nbsp;&nbsp;  ")
                     hd.markdown(f" **Evaluate Name**: `{evaluate_name}`")
 
                 # If this variable has child variables, recurse
@@ -133,56 +135,48 @@ def render_variable_tree(variables):
 
 
 def pov():
-    hd.markdown("## Python Object Viewer")
-    hd.divider(spacing=1, thickness=0)
+    with hd.hbox(gap=1, justify="space-around", border="0px solid red", padding=0.8):
+        with hd.box(
+            font_size=1, gap=0, justify="space-around", border="0px solid yellow"
+        ):
+            hd.markdown("## Python Object Viewer")
+            hd.divider(spacing=0.4, thickness=0)
 
-    dap_task = hd.task()
-    dap_task.run(dap_client)
+            dap_task = hd.task()
+            dap_task.run(dap_client)
 
-    if dap_task.running:
-        hd.markdown("## Waiting for variables...")
-        with hd.box(font_size=4):
-            hd.spinner(speed="5s", track_width=0.5)
+            if dap_task.running:
+                hd.markdown("## Waiting for variables...")
+                with hd.hbox(font_size=4, justify="space-around"):
+                    hd.spinner(speed="5s", track_width=0.5)
 
-    if dap_task.error:
-        print("Error collecting variables.")
-        hd.markdown("`Error collecting variables`")
-        return
+            if dap_task.error:
+                hd.markdown("`Error collecting variables`")
+                return
 
-    if dap_task.done:
-        hd.markdown("### Variables")
-        hd.divider(spacing=1)
+            if dap_task.done:
+                # hd.markdown("### Variables")
+                # hd.divider(spacing=1)
 
-        results = dap_task.result  # This is the dict returned by dap_client()
-        # print(f"Results: {results}")
-        globals_scope = results.get("globals", [])
-        locals_scope = results.get("locals", [])
+                results = dap_task.result  # This is the dict returned by dap_client()
+                # print(f"Results: {results}")
+                globals_scope = results.get("globals", [])
+                locals_scope = results.get("locals", [])
 
-        # Sort by 'name' (optional) -- think this messes up the order of variables / children references
-        # globals_scope.sort(key=lambda x: x.get("name", "").lower())
-        # locals_scope.sort(key=lambda x: x.get("name", "").lower())
+                # Sort by 'name' (optional) -- think this messes up the order of variables / children references
+                # globals_scope.sort(key=lambda x: x.get("name", "").lower())
+                # locals_scope.sort(key=lambda x: x.get("name", "").lower())
 
-        # Original table method
-        # render_table(globals_scope, "Globals")
-        # render_table(locals_scope, "Locals")
+                # Original table method - doesnt work well with nested variables
+                # render_table(globals_scope, "Globals")
+                # render_table(locals_scope, "Locals")
 
-        # Tree method
-        # render_tree(globals_scope, "Globals")
-        # hd.divider(spacing=2)
-        render_tree(locals_scope, "Locals")
-
-        # with hd.tree(indent_guide_width="1px"):
-        #     hd.tree_item("One")
-        #     hd.tree_item("Two")
-        #     with hd.tree_item("Three"):
-        #         hd.tree_item("Three A")
-        #         hd.tree_item("Three B")
-        #         with hd.tree_item("Three C"):
-        #             hd.tree_item("Three C-1")
-        #             hd.tree_item("Three C-2")
-        #         hd.tree_item("Three D")
-        #     hd.tree_item("Four")
-        #     hd.tree_item("Five")
+                # Tree method
+                with hd.hbox(gap=1):
+                    render_tree(locals_scope, "Locals")
+                hd.divider(spacing=2)
+                with hd.hbox(gap=1):
+                    render_tree(globals_scope, "Globals")
 
 
 hd.run(
