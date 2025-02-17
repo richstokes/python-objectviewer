@@ -1,6 +1,9 @@
 import hyperdiv as hd
 from dap_client import *
 
+
+# Variables to filter out from the display
+## These tend to be boilerplate or internal variables that are not interesting to display
 VARIABLE_NAMES_TO_FILTER = [
     "__builtins__",
     "__doc__",
@@ -9,11 +12,14 @@ VARIABLE_NAMES_TO_FILTER = [
     "__package__",
     "__spec__",
     "special variables",
-]  # Dont display these
+    "function variables",
+    "module variables",
+    "class variables",
+]
 VARIABLE_TYPES_TO_FILTER = [
     "builtin_function_or_method",
     "method-wrapper",
-]  # Dont display these
+]
 
 
 def render_table(variables, title):
@@ -117,7 +123,9 @@ def render_variable_tree(variables):
                 # hd.markdown(f"`{evaluate_name}`")
                 # hd.markdown(f"`{v.get('variablesReference', 0)}`")
 
-                hd.markdown(f"**{name}**: `{value}` (**Type**: {var_type})")
+                hd.markdown(f"**{name}**: `{value}` (**Type**: {var_type}) ")
+                if name != evaluate_name and evaluate_name:
+                    hd.markdown(f" **Evaluate Name**: `{evaluate_name}`")
 
                 # If this variable has child variables, recurse
                 if children:
