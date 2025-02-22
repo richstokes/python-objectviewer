@@ -63,7 +63,11 @@ def render_variable_tree(variables):
                 hd.markdown(f"**{name}**: `{value}` (**Type**: `{var_type}`) ")
                 if name != evaluate_name and evaluate_name:
                     hd.markdown(" &nbsp;&nbsp;&nbsp;  ")
-                    hd.markdown(f" **Evaluate Name**: `{evaluate_name}`")
+                    # hd.markdown(f" **Evaluate Name**: `{evaluate_name}`")
+                    hd.markdown(f" | `{evaluate_name}`")
+                    # hd.markdown(
+                    #     f" **Variables Reference**: `{v.get('variablesReference', 0)}`"
+                    # )
 
                 # If this variable has child variables, recurse
                 if children:
@@ -83,7 +87,7 @@ def pov():
             hd.divider(spacing=0.4, thickness=0)
 
             dap_task = hd.task()
-            dap_task.run(dap_client)
+            dap_task.run(lambda: dap_client(depth_limit=2))
 
             if dap_task.running:
                 hd.markdown("### Waiting for variables...")

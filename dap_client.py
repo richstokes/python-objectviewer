@@ -5,7 +5,6 @@ import json
 
 HOST = "127.0.0.1"
 PORT = 5678
-DEPTH_LIMIT = 2  # How many levels deep to fetch variables
 
 
 def read_line(sock):
@@ -93,7 +92,7 @@ def fetch_variables(sock, seq, var_ref):
     return seq, variables_list
 
 
-def fetch_variable_tree(sock, seq, var_ref, depth=DEPTH_LIMIT, visited=None):
+def fetch_variable_tree(sock, seq, var_ref, depth, visited=None):
     """
     Recursively fetches a tree of variables up to 'depth' levels.
 
@@ -152,7 +151,7 @@ def fetch_variable_tree(sock, seq, var_ref, depth=DEPTH_LIMIT, visited=None):
     return seq, result
 
 
-def dap_client():
+def dap_client(depth_limit: int):
     """
     Example DAP client that:
       1. Connects to debugpy,
@@ -166,6 +165,7 @@ def dap_client():
     """
 
     print(f"Connecting to {HOST}:{PORT}...")
+    print(f"Depth limit: {depth_limit}")
     sock = socket.create_connection((HOST, PORT))
     sock.settimeout(10.0)
 
@@ -303,7 +303,7 @@ def dap_client():
             print(f"  Scope: {scope_name_original} (ref={scope_ref})")
 
             # Recursively expand variables in this scope
-            seq, var_tree = fetch_variable_tree(sock, seq, scope_ref, depth=DEPTH_LIMIT)
+            seq, var_tree = fetch_variable_tree(sock, seq, scope_ref, depth=depth_limit)
             # Store them under the scope name (lowercased or original, your choice)
             scope_dict[scope_name_lower] = var_tree
 
@@ -331,6 +331,6 @@ def dap_client():
 
 
 if __name__ == "__main__":
-    result = dap_client()
+    result = dap_client(depth_limit=2)
     print("\n=== Final Expanded Frames ===\n")
     print(json.dumps(result, indent=2))
