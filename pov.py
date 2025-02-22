@@ -71,7 +71,11 @@ def render_variable_tree(variables):
 def pov():
     with hd.hbox(gap=1, justify="space-around", border="0px solid red", padding=0.8):
         with hd.box(
-            font_size=1, gap=0, justify="space-around", border="0px solid yellow"
+            font_size=1,
+            gap=0,
+            justify="space-around",
+            border="0px solid yellow",
+            align="center",
         ):
             hd.markdown("## Python Object Viewer")
             hd.divider(spacing=0.4, thickness=0)
@@ -81,8 +85,11 @@ def pov():
 
             if dap_task.running:
                 hd.markdown("### Waiting for variables...")
+                hd.markdown("&nbsp;")  # hack to add some space
                 with hd.hbox(font_size=4, justify="space-around"):
                     hd.spinner(speed="5s", track_width=0.5)
+                hd.markdown("&nbsp;")  # hack to add some space
+                hd.markdown("This can take a couple of minutes.")
 
             if dap_task.error:
                 hd.markdown("`Error collecting variables`")
