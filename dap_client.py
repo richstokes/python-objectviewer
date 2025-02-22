@@ -5,7 +5,7 @@ import json
 
 HOST = "127.0.0.1"
 PORT = 5678
-DEPTH_LIMIT = 3  # How many levels deep to fetch variables
+DEPTH_LIMIT = 2  # How many levels deep to fetch variables
 
 
 def read_line(sock):

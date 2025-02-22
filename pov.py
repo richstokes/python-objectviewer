@@ -33,6 +33,7 @@ def render_variable_tree(variables):
     """
     Renders a list of variables (each may have 'children') in a nested tree format.
     """
+    print(f"Rendering variable tree with {len(variables)} variables")
     for v in variables:
         # print(f"Rendering variable tree for: {v}")
         name = v["name"]
