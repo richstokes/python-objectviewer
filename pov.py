@@ -145,7 +145,7 @@ def pov():
             dap_task.run(dap_client)
 
             if dap_task.running:
-                hd.markdown("## Waiting for variables...")
+                hd.markdown("### Waiting for variables...")
                 with hd.hbox(font_size=4, justify="space-around"):
                     hd.spinner(speed="5s", track_width=0.5)
 
@@ -154,8 +154,14 @@ def pov():
                 return
 
             if dap_task.done:
+                print("dap_task is done")
                 results = dap_task.result  # This is the dict returned by dap_client()
                 # print(f"Results: {results}")
+                print(f"Results: {results.keys()}")
+                # print(f"Got {len(results)} variables")
+                print(f"Got {len(results['locals'])} local variables")
+                print(f"Got {len(results['globals'])} global variables")
+
                 globals_scope = results.get("globals", [])
                 locals_scope = results.get("locals", [])
 
