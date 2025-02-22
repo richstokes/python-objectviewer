@@ -99,6 +99,7 @@ def render_variable_tree(variables):
     Renders a list of variables (each may have 'children') in a nested tree format.
     """
     for v in variables:
+        print(f"Rendering variable tree for: {v}")
         name = v["name"]
         value = v.get("value", "unknown")
         var_type = v.get("type", "unknown")
@@ -156,25 +157,44 @@ def pov():
             if dap_task.done:
                 print("dap_task is done")
                 results = dap_task.result  # This is the dict returned by dap_client()
-                # print(f"Results: {results}")
-                print(f"Results: {results.keys()}")
-                # print(f"Got {len(results)} variables")
-                print(f"Got {len(results['locals'])} local variables")
-                print(f"Got {len(results['globals'])} global variables")
 
-                globals_scope = results.get("globals", [])
-                locals_scope = results.get("locals", [])
+                # If no frames, nothing to display
+                frames = results.get("frames", [])
+                if not frames:
+                    hd.markdown("No frames returned from dap_client.")
+                    return
 
-                # Tree method
-                with hd.tab_group() as tabs:
-                    t1 = hd.tab("Locals")
-                    t2 = hd.tab("Globals")
+                # Right now we only get one frame, so we'll just use that
+                first_frame = frames[0]
+                dap_scopes = first_frame.get("scopes", {})
+                print(f"Scopes available: {list(dap_scopes.keys())}")
 
+                # Count variables in each scope
+                for scope_list in dap_scopes.keys():
+                    print(
+                        f"Scope: {scope_list} has {len(dap_scopes[scope_list])} variables"
+                    )
+
+                # Create a tab group for all scope names
+                tabs_dict = {}
+                with hd.tab_group():
+                    for scope_name in dap_scopes.keys():
+                        with hd.scope(scope_name):
+                            # Create a tab with the title = scope_name.title()
+                            tab_obj = hd.tab(scope_name.title())
+                            # Store the tab object in a dict so we can check if it's active later
+                            tabs_dict[scope_name] = tab_obj
+
+                # Now show the variables for whichever tab is active
                 with hd.hbox(gap=1):
-                    if t1.active:
-                        render_tree(locals_scope, "Locals")
-                    elif t2.active:
-                        render_tree(globals_scope, "Globals")
+                    # We'll iterate again to find the active tab
+                    for scope_name, tab_obj in tabs_dict.items():
+                        with hd.scope(tab_obj):
+                            if tab_obj.active:
+                                scope_vars = dap_scopes[scope_name]
+                                render_tree(
+                                    scope_vars, title=f"{scope_name.title()} Scope"
+                                )
 
 
 hd.run(
