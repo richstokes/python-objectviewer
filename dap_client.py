@@ -319,6 +319,13 @@ def dap_client():
     print("Done collecting variables. Closing socket.")
     sock.close()
 
+    # Remove globals scope if exactly the same as locals
+    for frame in frames_data:
+        if "globals" in frame["scopes"]:
+            if len(frame["scopes"]["globals"]) == len(frame["scopes"]["locals"]):
+                print(f"Removing 'globals' scope as it's the same length as 'locals'")
+                del frame["scopes"]["globals"]
+
     # Return everything
     return {"frames": frames_data}
 

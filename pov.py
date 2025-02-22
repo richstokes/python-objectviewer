@@ -15,6 +15,7 @@ VARIABLE_NAMES_TO_FILTER = [
     "function variables",
     "module variables",
     "class variables",
+    "debugpy",
 ]
 VARIABLE_TYPES_TO_FILTER = [
     "builtin_function_or_method",
@@ -33,7 +34,7 @@ def render_variable_tree(variables):
     Renders a list of variables (each may have 'children') in a nested tree format.
     """
     for v in variables:
-        print(f"Rendering variable tree for: {v}")
+        # print(f"Rendering variable tree for: {v}")
         name = v["name"]
         value = v.get("value", "unknown")
         var_type = v.get("type", "unknown")
@@ -104,7 +105,9 @@ def pov():
                 # If no frames, nothing to display
                 frames = results.get("frames", [])
                 if not frames:
-                    hd.markdown("No frames returned from dap_client.")
+                    print("No frames returned from dap_client. Re-running.")
+                    dap_task.clear()
+                    dap_task.run(dap_client)
                     return
 
                 # Right now we only get one frame, so we'll just use that
