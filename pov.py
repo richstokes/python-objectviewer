@@ -89,7 +89,9 @@ def pov():
                 with hd.hbox(font_size=4, justify="space-around"):
                     hd.spinner(speed="5s", track_width=0.5)
                 hd.markdown("&nbsp;")  # hack to add some space
-                hd.markdown("This can take a couple of minutes.")
+                hd.markdown(
+                    "This can take a couple of minutes, depending on the size of your program."
+                )
 
             if dap_task.error:
                 hd.markdown("`Error collecting variables`")
