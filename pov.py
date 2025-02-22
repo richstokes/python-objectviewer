@@ -90,7 +90,6 @@ def render_variable_table(variables, indent=0):
 
 def render_tree(variables, title):
     with hd.box(border="0px solid blue", padding=0.8):
-        hd.markdown(f"### {title}")
         with hd.tree(indent_guide_width="1px"):
             render_variable_tree(variables)
 
