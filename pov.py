@@ -155,28 +155,21 @@ def pov():
                 return
 
             if dap_task.done:
-                # hd.markdown("### Variables")
-                # hd.divider(spacing=1)
-
                 results = dap_task.result  # This is the dict returned by dap_client()
                 # print(f"Results: {results}")
                 globals_scope = results.get("globals", [])
                 locals_scope = results.get("locals", [])
 
-                # Sort by 'name' (optional) -- think this messes up the order of variables / children references
-                # globals_scope.sort(key=lambda x: x.get("name", "").lower())
-                # locals_scope.sort(key=lambda x: x.get("name", "").lower())
-
-                # Original table method - doesnt work well with nested variables
-                # render_table(globals_scope, "Globals")
-                # render_table(locals_scope, "Locals")
-
                 # Tree method
+                with hd.tab_group() as tabs:
+                    t1 = hd.tab("Locals")
+                    t2 = hd.tab("Globals")
+
                 with hd.hbox(gap=1):
-                    render_tree(locals_scope, "Locals")
-                hd.divider(spacing=2)
-                with hd.hbox(gap=1):
-                    render_tree(globals_scope, "Globals")
+                    if t1.active:
+                        render_tree(locals_scope, "Locals")
+                    elif t2.active:
+                        render_tree(globals_scope, "Globals")
 
 
 hd.run(
