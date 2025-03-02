@@ -88,7 +88,7 @@ def pov():
 
             dap_task = hd.task()
             dap_task.run(
-                lambda: dap_client(depth_limit=3)
+                lambda: dap_client(depth_limit=2)
             )  # TODO: make this a dropdown/similar
 
             if dap_task.running:
