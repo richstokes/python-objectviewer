@@ -1,8 +1,9 @@
-Debugging tool thats lets you easily inspect/visualize objects and variables in your running python code in real time.  
+Debugging tool thats lets you easily inspect/visualize objects and variables in your running python code as a tree view.  
 
 It uses the Debug Adapter Protocol (DAP) to retrieve the objects in your running python program. It then displays them in a web app.  
 
 Every time you refresh the page, it briefly pauses your running code and displays a snapshot of its current state.  
+
 
 
 #### Screenshot
@@ -10,7 +11,7 @@ Every time you refresh the page, it briefly pauses your running code and display
 
 
 ## Setup
-On the project you wish to debug, install [debgugpy](https://github.com/microsoft/debugpy):  
+On the project you wish to debug, install [debugpy](https://github.com/microsoft/debugpy):  
 `pipenv install debugpy`
 
 
