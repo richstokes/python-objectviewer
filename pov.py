@@ -49,6 +49,10 @@ def render_variable_tree(variables):
         if var_type in VARIABLE_TYPES_TO_FILTER:
             continue
 
+        # Truncate long values
+        if len(value) > 100:
+            value = f"{value[:100]} ..."
+
         # Render one node for the variable
         with hd.scope(v):
             # print(f"DEBUG: Rendering variable: {name} with value: {value}")

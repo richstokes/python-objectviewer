@@ -27,3 +27,17 @@ In another terminal, clone this repo and run:
 `HD_PORT=9000 pipenv run python pov.py`
 
 Then open your browser at [http://localhost:9000](http://localhost:9000)
+
+
+## Notes
+By default this will grab the variables of the running program at the time you load/reload the python-objectviewer page.
+
+If you want to capture the state more precisely you can do something like this in your target program:
+
+```python
+# At the start of your program
+debugpy.wait_for_client()
+
+# At the point in the code you want to capture
+debugpy.breakpoint()
+```
