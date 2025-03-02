@@ -53,10 +53,24 @@ def render_variable_tree(variables):
         if len(value) > 100:
             value = f"{value[:100]} ..."
 
+        bg_color = None
+        # TODO: Find a better way to color code variables / style them based on type
+        # col_varient = "-800"
+        # if var_type == "str":
+        #     bg_color = f"sky{col_varient}"
+        # if var_type == "int":
+        #     bg_color = f"violet{col_varient}"
+        # if var_type == "float":
+        #     bg_color = f"purple{col_varient}"
+        # if var_type == "list":
+        #     bg_color = f"pink{col_varient}"
+        # if var_type == "dict":
+        #     bg_color = f"rose{col_varient}"
+
         # Render one node for the variable
         with hd.scope(v):
             # print(f"DEBUG: Rendering variable: {name} with value: {value}")
-            with hd.tree_item():
+            with hd.tree_item(background_color=bg_color):
                 # hd.markdown(f"**{name}**")
                 # hd.markdown(f"{name}")
                 # hd.markdown(f"`{value}`")
@@ -106,7 +120,9 @@ def pov():
                 )
 
             if dap_task.error:
-                hd.markdown("`Error collecting variables`")
+                hd.markdown(
+                    "`Error collecting variables - make sure the debugger is running on localhost:5678`"
+                )
                 return
 
             if dap_task.done:
