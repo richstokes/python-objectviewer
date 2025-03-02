@@ -31,7 +31,7 @@ Then open your browser at [http://localhost:9000](http://localhost:9000)
 &nbsp; 
 
 ## Notes
-By default this will grab the variables of the running program at the time you load/reload the python-objectviewer page. I like this for long-running programs that are running in an infinte loop; a quick refresh of this tool and it'll snapshot the current state without needing any modifications of the target program. 
+By default this will grab the variables of the running program at the time you load/reload the python-objectviewer page. I like this for long-running programs / those that are running in an infinite loop; a quick refresh of this tool and it'll snapshot the current state without needing any modifications of the target program. 
 
 If you want to capture the state more precisely you can do something like this in your target program:
 
