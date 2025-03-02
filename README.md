@@ -28,6 +28,7 @@ In another terminal, clone this repo and run:
 
 Then open your browser at [http://localhost:9000](http://localhost:9000)
 
+&nbsp; 
 
 ## Notes
 By default this will grab the variables of the running program at the time you load/reload the python-objectviewer page.
@@ -41,3 +42,5 @@ debugpy.wait_for_client()
 # At the point in the code you want to capture
 debugpy.breakpoint()
 ```
+
+The code will then pause at the breakpoint until this tool connects and takes a snapshot of its current state. 
