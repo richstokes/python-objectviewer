@@ -87,7 +87,9 @@ def pov():
             hd.divider(spacing=0.4, thickness=0)
 
             dap_task = hd.task()
-            dap_task.run(lambda: dap_client(depth_limit=2))
+            dap_task.run(
+                lambda: dap_client(depth_limit=3)
+            )  # TODO: make this a dropdown/similar
 
             if dap_task.running:
                 hd.markdown("### Waiting for variables...")
@@ -146,6 +148,18 @@ def pov():
                                 render_tree(
                                     scope_vars, title=f"{scope_name.title()} Scope"
                                 )
+
+                # Dropdown for selecting the depth limit
+                # with hd.box(gap=1):
+                #     with hd.select(
+                #         placeholder="Depth Limit",
+                #     ) as select:
+                #         hd.option("1")
+                #         hd.option("2")
+                #         hd.option("3")
+                #         hd.option("4")
+                #         hd.option("5")
+                #     hd.text("Selected:", select.value)
 
 
 hd.run(
